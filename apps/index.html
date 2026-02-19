@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apps | Mike Lounello</title>
+    <meta
+      name="description"
+      content="Live previews and launch links for apps built by Mike Lounello."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="noise-layer" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="/">
+        <span class="mark-plate" aria-hidden="true">ML</span>
+        <span>mlounello.com</span>
+      </a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/apps" aria-current="page">Apps</a>
+      </nav>
+    </header>
+
+    <main class="apps-main">
+      <section class="apps-hero">
+        <p class="eyebrow">App directory</p>
+        <h1>Here is the full app lineup.</h1>
+        <p>
+          Click any preview to open the live app in a new tab. If a host blocks embeds, the launch link still works.
+        </p>
+      </section>
+
+      <section>
+        <div id="appsGrid" class="apps-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-meta">
+        <span class="mark-plate mark-plate-footer" aria-hidden="true">ML</span>
+        <p>&copy; <span id="year"></span> Mike Lounello</p>
+      </div>
+    </footer>
+
+    <script src="/assets/apps.js"></script>
+  </body>
+</html>

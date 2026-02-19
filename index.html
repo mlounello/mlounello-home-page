@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mike Lounello | Builder, Creative, Developer</title>
+    <meta
+      name="description"
+      content="Personal website for Mike Lounello featuring apps, experiments, and creative software projects."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="noise-layer" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="/">
+        <span class="mark-plate" aria-hidden="true">ML</span>
+        <span>mlounello.com</span>
+      </a>
+      <nav>
+        <a href="/apps">Apps</a>
+      </nav>
+    </header>
+
+    <main class="home-main">
+      <section class="hero">
+        <p class="eyebrow">Mike Lounello | Personal site</p>
+        <h1>Clean, repeatable, and it works.</h1>
+        <p class="hero-copy">
+          Here is the plan: one home base, one app directory, and direct links to every live build.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/apps">Browse Apps</a>
+          <a class="btn btn-ghost" href="mailto:hello@mlounello.com">Contact</a>
+        </div>
+      </section>
+
+      <section class="feature-panel">
+        <h2>Quick read: what is changing and why</h2>
+        <div class="feature-grid">
+          <article>
+            <h3>Goal</h3>
+            <p>Show every live app in one clear system at mlounello.com/apps.</p>
+          </article>
+          <article>
+            <h3>Plan</h3>
+            <p>Use non-interactive mini previews with one-click open actions.</p>
+          </article>
+          <article>
+            <h3>Needs</h3>
+            <p>Keep app URLs current in one data file and the site stays in sync.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-meta">
+        <span class="mark-plate mark-plate-footer" aria-hidden="true">ML</span>
+        <p>&copy; <span id="year"></span> Mike Lounello</p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
