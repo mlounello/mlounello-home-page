@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Owner Control Room | Mike Lounello</title>
+    <meta
+      name="description"
+      content="Owner control room for user profiles, app assignments, and permissions across Mike Lounello apps."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div class="noise-layer" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="/">
+        <span class="mark-plate" aria-hidden="true">ML</span>
+        <span>mlounello.com</span>
+      </a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/apps">Apps</a>
+        <a href="/admin" aria-current="page">Admin</a>
+      </nav>
+    </header>
+
+    <main class="admin-main">
+      <section class="admin-hero">
+        <div>
+          <p class="eyebrow">Owner control room</p>
+          <h1>One place to manage users, apps, and access.</h1>
+          <p class="hero-copy">
+            This is the master layer above per-app admin. It is built for account oversight, app assignments, and permission governance.
+          </p>
+        </div>
+        <div class="admin-lockup">
+          <p class="status-chip">Owner-only route</p>
+          <p class="admin-note">
+            Protect this route with Cloudflare Access and your Google account before using it with live data.
+          </p>
+        </div>
+      </section>
+
+      <section class="admin-grid">
+        <article class="admin-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Overview</p>
+              <h2>Control room status</h2>
+            </div>
+          </div>
+          <div id="adminMetrics" class="admin-metrics"></div>
+        </article>
+
+        <article class="admin-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Stack</p>
+              <h2>Operating model</h2>
+            </div>
+          </div>
+          <div class="admin-checklist">
+            <div class="check-row">
+              <span class="check-dot"></span>
+              <p>Global user directory at the site level.</p>
+            </div>
+            <div class="check-row">
+              <span class="check-dot"></span>
+              <p>App assignment and role mapping managed centrally.</p>
+            </div>
+            <div class="check-row">
+              <span class="check-dot"></span>
+              <p>Per-app admin remains inside each app for local operations.</p>
+            </div>
+            <div class="check-row">
+              <span class="check-dot"></span>
+              <p>Cloudflare Access gates `/admin` to your identity.</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="admin-section">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Users</p>
+            <h2>User directory</h2>
+          </div>
+          <p class="section-copy">Who is in the system, what they can reach, and where they need attention.</p>
+        </div>
+        <div id="userDirectory" class="directory-list"></div>
+      </section>
+
+      <section class="admin-section">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Apps</p>
+            <h2>Hosted apps</h2>
+          </div>
+          <p class="section-copy">Status, owner actions, and how each app is wired into the shared platform.</p>
+        </div>
+        <div id="adminApps" class="admin-apps-grid"></div>
+      </section>
+
+      <section class="admin-grid admin-grid-wide">
+        <article class="admin-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Access matrix</p>
+              <h2>App permissions</h2>
+            </div>
+          </div>
+          <div id="permissionMatrix" class="permission-matrix"></div>
+        </article>
+
+        <article class="admin-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Owner queue</p>
+              <h2>Immediate next actions</h2>
+            </div>
+          </div>
+          <div id="ownerQueue" class="owner-queue"></div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-meta">
+        <span class="mark-plate mark-plate-footer" aria-hidden="true">ML</span>
+        <p>&copy; <span id="year"></span> Mike Lounello</p>
+      </div>
+      <div class="legal-links">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+      </div>
+    </footer>
+
+    <script src="/assets/admin.js"></script>
+  </body>
+</html>
