@@ -131,18 +131,21 @@
         <article class="admin-panel">
           <div class="panel-head">
             <div>
-              <p class="eyebrow">Assignments</p>
-              <h2>Grant app access</h2>
+              <p class="eyebrow">Selected route</p>
+              <h2>Role editor</h2>
             </div>
+          </div>
+          <div id="selectedMembershipSummary" class="selection-summary">
+            Select a patch point in the switchboard below to edit that app assignment.
           </div>
           <form id="assignmentForm" class="admin-form">
             <label>
               <span>User</span>
-              <select id="assignmentUser" name="userId" required></select>
+              <select id="assignmentUser" name="userId" required disabled></select>
             </label>
             <label>
               <span>App</span>
-              <select id="assignmentApp" name="appId" required></select>
+              <select id="assignmentApp" name="appId" required disabled></select>
             </label>
             <label>
               <span>App role</span>
@@ -165,12 +168,26 @@
                 <option value="revoked">Revoked</option>
               </select>
             </label>
-            <button class="btn btn-primary" type="submit">Save assignment</button>
+            <div class="form-actions admin-form-wide">
+              <button class="btn btn-primary" type="submit">Save assignment</button>
+              <button id="removeAssignmentButton" class="btn btn-ghost" type="button">Remove from app</button>
+            </div>
           </form>
         </article>
       </section>
 
       <section id="adminFlash" class="admin-flash" aria-live="polite"></section>
+
+      <section class="admin-section">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Routing view</p>
+            <h2>Membership switchboard</h2>
+          </div>
+          <p class="section-copy">Apps run across the top. Users run down the side. Click a patch point to add or edit access.</p>
+        </div>
+        <div id="switchboard" class="switchboard"></div>
+      </section>
 
       <section class="admin-section">
         <div class="panel-head">

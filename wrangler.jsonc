@@ -6,13 +6,14 @@
     "directory": "."
   },
   "vars": {
-    "OWNER_EMAIL": ""
+    "OWNER_EMAIL": "mr28loun@gmail.com",
+    "APP_SYNC_SECRET": "5158ad2de5f70d1b4c82c14fe585bd23a4dd8dd0cfea7d6ffe5136e6e295983a"
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "mlounello-home-page",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+      "database_id": "b30e1014-b786-410c-a0a6-ce3ded0e86f4"
     }
   ]
 }

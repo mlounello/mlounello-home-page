@@ -1,7 +1,9 @@
 const state = {
   apps: [],
   users: [],
+  memberships: [],
   ownerQueue: [],
+  selectedMembership: null,
 };
 
 const metricContainer = document.getElementById("adminMetrics");
@@ -10,10 +12,16 @@ const appContainer = document.getElementById("adminApps");
 const matrixContainer = document.getElementById("permissionMatrix");
 const queueContainer = document.getElementById("ownerQueue");
 const flashContainer = document.getElementById("adminFlash");
+const switchboardContainer = document.getElementById("switchboard");
 const userForm = document.getElementById("userForm");
 const assignmentForm = document.getElementById("assignmentForm");
 const assignmentUser = document.getElementById("assignmentUser");
 const assignmentApp = document.getElementById("assignmentApp");
+const appRoleInput = document.getElementById("appRole");
+const permissionLevelInput = document.getElementById("permissionLevel");
+const membershipStatusInput = document.getElementById("membershipStatus");
+const selectedMembershipSummary = document.getElementById("selectedMembershipSummary");
+const removeAssignmentButton = document.getElementById("removeAssignmentButton");
 const year = document.getElementById("year");
 
 if (year) {
@@ -37,6 +45,14 @@ function createMetric(label, value, helper) {
       <p class="metric-helper">${helper}</p>
     </div>
   `;
+}
+
+function getMembership(userId, appId) {
+  return state.memberships.find((membership) => membership.userId === userId && membership.appId === appId) || null;
+}
+
+function isActiveMembership(membership) {
+  return membership && membership.membershipStatus !== "revoked";
 }
 
 function renderMetrics(metrics) {
@@ -97,6 +113,7 @@ function renderApps(apps) {
             <p><span>Environment</span>${app.environmentLabel}</p>
             <p><span>Users</span>${app.userCount}</p>
             <p><span>Role model</span>${app.roleModel || "Not set"}</p>
+            <p><span>Last sync</span>${app.lastSyncedAt ? new Date(app.lastSyncedAt).toLocaleString() : "No sync yet"}</p>
           </div>
         </article>
       `,
@@ -164,6 +181,136 @@ function renderAssignmentOptions() {
   }
 }
 
+function renderSelectionSummary() {
+  if (!selectedMembershipSummary) {
+    return;
+  }
+
+  if (!state.selectedMembership) {
+    selectedMembershipSummary.textContent =
+      "Select a patch point in the switchboard below to edit that app assignment.";
+    return;
+  }
+
+  const user = state.users.find((entry) => entry.id === state.selectedMembership.userId);
+  const app = state.apps.find((entry) => entry.id === state.selectedMembership.appId);
+
+  selectedMembershipSummary.textContent = `${user?.name || "Unknown user"} -> ${app?.name || "Unknown app"} | ${state.selectedMembership.appRole} | ${formatLabel(state.selectedMembership.permissionLevel)}`;
+}
+
+function populateRoleEditor() {
+  renderAssignmentOptions();
+  renderSelectionSummary();
+
+  if (!state.selectedMembership) {
+    assignmentForm?.reset();
+    return;
+  }
+
+  assignmentUser.value = String(state.selectedMembership.userId);
+  assignmentApp.value = String(state.selectedMembership.appId);
+  appRoleInput.value = state.selectedMembership.appRole;
+  permissionLevelInput.value = state.selectedMembership.permissionLevel;
+  membershipStatusInput.value = state.selectedMembership.membershipStatus;
+}
+
+function renderSwitchboard() {
+  if (!switchboardContainer) {
+    return;
+  }
+
+  const headerCells = state.apps
+    .map(
+      (app) => `
+        <div class="switchboard-app">
+          <span>${app.name}</span>
+        </div>
+      `,
+    )
+    .join("");
+
+  const rows = state.users
+    .map((user) => {
+      const cells = state.apps
+        .map((app) => {
+          const membership = getMembership(user.id, app.id);
+          const isActive = isActiveMembership(membership);
+          const isSelected =
+            state.selectedMembership &&
+            state.selectedMembership.userId === user.id &&
+            state.selectedMembership.appId === app.id;
+
+          return `
+            <button
+              class="patch-point${isActive ? " is-active" : ""}${isSelected ? " is-selected" : ""}"
+              type="button"
+              data-user-id="${user.id}"
+              data-app-id="${app.id}"
+              aria-label="${isActive ? "Edit" : "Add"} ${user.name} on ${app.name}"
+            >
+              <span class="patch-core"></span>
+            </button>
+          `;
+        })
+        .join("");
+
+      return `
+        <div class="switchboard-user">
+          <div class="switchboard-user-name">
+            <strong>${user.name}</strong>
+            <span>${user.email}</span>
+          </div>
+          <div class="switchboard-row">${cells}</div>
+        </div>
+      `;
+    })
+    .join("");
+
+  switchboardContainer.innerHTML = `
+    <div class="switchboard-head">
+      <div class="switchboard-corner">Users / Apps</div>
+      <div class="switchboard-apps">${headerCells}</div>
+    </div>
+    <div class="switchboard-body">${rows}</div>
+  `;
+
+  switchboardContainer.querySelectorAll(".patch-point").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const userId = Number(button.dataset.userId);
+      const appId = Number(button.dataset.appId);
+      const membership = getMembership(userId, appId);
+
+      if (!membership) {
+        try {
+          await request("/api/admin/memberships/toggle", {
+            method: "POST",
+            body: JSON.stringify({ userId, appId }),
+          });
+
+          await loadAdmin({
+            userId,
+            appId,
+          });
+          showFlash("App access added.", "success");
+        } catch (error) {
+          showFlash(error.message, "error");
+        }
+        return;
+      }
+
+      state.selectedMembership = { ...membership };
+      populateRoleEditor();
+      renderSwitchboard();
+    });
+  });
+}
+
+function formatLabel(value) {
+  return String(value || "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 async function request(url, options = {}) {
   const response = await fetch(url, {
     headers: {
@@ -182,20 +329,37 @@ async function request(url, options = {}) {
   return payload;
 }
 
-async function loadAdmin() {
+function syncSelectedMembership() {
+  if (!state.selectedMembership) {
+    return;
+  }
+
+  const next = getMembership(state.selectedMembership.userId, state.selectedMembership.appId);
+  state.selectedMembership = next ? { ...next } : null;
+}
+
+async function loadAdmin(selection = null) {
   try {
     const payload = await request("/api/admin/bootstrap");
 
     state.apps = payload.apps;
     state.users = payload.users;
+    state.memberships = payload.memberships;
     state.ownerQueue = payload.ownerQueue;
+
+    if (selection) {
+      state.selectedMembership = getMembership(selection.userId, selection.appId);
+    } else {
+      syncSelectedMembership();
+    }
 
     renderMetrics(payload.metrics);
     renderUsers(payload.users);
     renderApps(payload.apps);
     renderMatrix(payload.apps);
     renderQueue(payload.ownerQueue);
-    renderAssignmentOptions();
+    renderSwitchboard();
+    populateRoleEditor();
 
     showFlash(payload.securityMessage || "Admin data loaded.", "success");
   } catch (error) {
@@ -248,8 +412,35 @@ if (assignmentForm) {
         }),
       });
 
-      assignmentForm.reset();
       showFlash("Assignment saved.", "success");
+      await loadAdmin({
+        userId: Number(formData.get("userId")),
+        appId: Number(formData.get("appId")),
+      });
+    } catch (error) {
+      showFlash(error.message, "error");
+    }
+  });
+}
+
+if (removeAssignmentButton) {
+  removeAssignmentButton.addEventListener("click", async () => {
+    if (!state.selectedMembership) {
+      showFlash("Select an assignment first.", "error");
+      return;
+    }
+
+    try {
+      await request("/api/admin/memberships/toggle", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: state.selectedMembership.userId,
+          appId: state.selectedMembership.appId,
+        }),
+      });
+
+      showFlash("Assignment removed from app.", "success");
+      state.selectedMembership = null;
       await loadAdmin();
     } catch (error) {
       showFlash(error.message, "error");
