@@ -38,15 +38,15 @@ async function handleAdminApi(request, env) {
     );
   }
 
-  const authError = ensureOwner(request, env);
-  if (authError) {
-    return authError;
-  }
-
   const url = new URL(request.url);
 
   if (request.method === "POST" && url.pathname === "/api/admin/sync/app-users") {
     return syncAppUsers(request, env);
+  }
+
+  const authError = ensureOwner(request, env);
+  if (authError) {
+    return authError;
   }
 
   if (request.method === "GET" && (url.pathname === "/api/admin" || url.pathname === "/api/admin/")) {
@@ -85,6 +85,14 @@ function ensureOwner(request, env) {
   const authenticatedEmail = request.headers.get("Cf-Access-Authenticated-User-Email");
 
   if (!authenticatedEmail || authenticatedEmail.toLowerCase() !== expectedOwner.toLowerCase()) {
+    console.log(
+      JSON.stringify({
+        event: "admin_owner_rejected",
+        path: new URL(request.url).pathname,
+        expectedOwner,
+        authenticatedEmail: authenticatedEmail || null,
+      }),
+    );
     return json({ error: "Forbidden" }, 403);
   }
 
@@ -303,12 +311,26 @@ async function syncAppUsers(request, env) {
   const body = await request.json().catch(() => null);
 
   if (!body?.appSlug || !Array.isArray(body.users)) {
+    console.log(
+      JSON.stringify({
+        event: "app_sync_invalid_payload",
+        reason: "missing_app_slug_or_users",
+        hasAppSlug: Boolean(body?.appSlug),
+        usersIsArray: Array.isArray(body?.users),
+      }),
+    );
     return json({ error: "appSlug and users[] are required." }, 400);
   }
 
   const app = await env.DB.prepare(`SELECT id, name FROM apps WHERE slug = ?`).bind(body.appSlug).first();
 
   if (!app) {
+    console.log(
+      JSON.stringify({
+        event: "app_sync_unknown_slug",
+        appSlug: body.appSlug,
+      }),
+    );
     return json({ error: "Unknown app slug." }, 404);
   }
 
@@ -317,6 +339,15 @@ async function syncAppUsers(request, env) {
 
   for (const user of body.users) {
     if (!user?.email || !user?.fullName) {
+      console.log(
+        JSON.stringify({
+          event: "app_sync_skipped_user",
+          appSlug: body.appSlug,
+          reason: "missing_email_or_full_name",
+          hasEmail: Boolean(user?.email),
+          hasFullName: Boolean(user?.fullName),
+        }),
+      );
       continue;
     }
 
@@ -400,12 +431,25 @@ async function syncAppUsers(request, env) {
 
 function ensureSyncSecret(request, env) {
   if (!env.APP_SYNC_SECRET) {
+    console.log(
+      JSON.stringify({
+        event: "app_sync_secret_missing",
+      }),
+    );
     return json({ error: "APP_SYNC_SECRET is not configured." }, 500);
   }
 
   const token = request.headers.get("X-App-Sync-Secret");
 
   if (!token || token !== env.APP_SYNC_SECRET) {
+    console.log(
+      JSON.stringify({
+        event: "app_sync_secret_rejected",
+        hasHeader: Boolean(token),
+        receivedLength: token ? token.length : 0,
+        expectedLength: env.APP_SYNC_SECRET.length,
+      }),
+    );
     return json({ error: "Unauthorized sync request." }, 401);
   }
 
