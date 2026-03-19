@@ -444,6 +444,63 @@ nav a:hover {
   gap: 12px;
 }
 
+.admin-form {
+  margin-top: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.admin-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-form span {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #0f1722;
+  color: var(--text-main);
+  padding: 12px 14px;
+  font: inherit;
+}
+
+.admin-form textarea {
+  resize: vertical;
+}
+
+.admin-form-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-form button {
+  width: fit-content;
+}
+
+.admin-flash {
+  min-height: 24px;
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.84rem;
+}
+
+.admin-flash.is-success {
+  color: #8fd3a5;
+}
+
+.admin-flash.is-error {
+  color: #f0a4a4;
+}
+
 .check-row {
   display: flex;
   gap: 12px;
@@ -723,7 +780,8 @@ nav a:hover {
   .feature-grid,
   .admin-grid,
   .admin-apps-grid,
-  .admin-metrics {
+  .admin-metrics,
+  .admin-form {
     grid-template-columns: 1fr;
   }
 

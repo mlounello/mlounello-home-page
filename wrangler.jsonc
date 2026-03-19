@@ -1,7 +1,18 @@
 {
   "name": "mlounello-home-page",
   "compatibility_date": "2026-02-19",
+  "main": "src/index.js",
   "assets": {
     "directory": "."
-  }
+  },
+  "vars": {
+    "OWNER_EMAIL": ""
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mlounello-home-page",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+    }
+  ]
 }

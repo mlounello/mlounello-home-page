@@ -1,105 +1,32 @@
-const apps = [
-  {
-    name: "GoboPad",
-    environment: "Production",
-    users: 12,
-    roleModel: "Owner / Admin / Crew",
-    status: "Live",
-    note: "Lighting workflow app with active production access.",
-  },
-  {
-    name: "Theatre Budget App",
-    environment: "Production",
-    users: 9,
-    roleModel: "Owner / Finance / Viewer",
-    status: "Live",
-    note: "Budget access should stay tightly scoped by department.",
-  },
-  {
-    name: "DomeImages",
-    environment: "Production",
-    users: 6,
-    roleModel: "Owner / Editor / Viewer",
-    status: "Live",
-    note: "Media library with shared asset visibility rules.",
-  },
-  {
-    name: "Siena Wheel",
-    environment: "Production",
-    users: 18,
-    roleModel: "Owner / Instructor / Viewer",
-    status: "Live",
-    note: "Broader classroom-facing access with simpler role tiers.",
-  },
-  {
-    name: "Alcohol Origins",
-    environment: "Pilot",
-    users: 4,
-    roleModel: "Owner / Editor / Viewer",
-    status: "Pilot",
-    note: "Editorial access should stay limited while content settles.",
-  },
-  {
-    name: "ShowPrep App",
-    environment: "Production",
-    users: 14,
-    roleModel: "Owner / Stage Manager / Crew",
-    status: "Live",
-    note: "Operational app where role boundaries affect day-of-show work.",
-  },
-];
-
-const users = [
-  {
-    name: "Mike Lounello",
-    email: "owner@mlounello.com",
-    role: "Owner",
-    status: "Active",
-    apps: ["All apps"],
-    alert: "Primary owner account",
-  },
-  {
-    name: "Production Admin",
-    email: "admin@showprepapp.mlounello.com",
-    role: "Admin",
-    status: "Active",
-    apps: ["ShowPrep App", "GoboPad"],
-    alert: "Review MFA every quarter",
-  },
-  {
-    name: "Finance Lead",
-    email: "finance@theatrebudgetapp.mlounello.com",
-    role: "Finance",
-    status: "Active",
-    apps: ["Theatre Budget App"],
-    alert: "Budget export rights enabled",
-  },
-  {
-    name: "Content Editor",
-    email: "editor@alcoholorigins.mlounello.com",
-    role: "Editor",
-    status: "Pending review",
-    apps: ["Alcohol Origins", "DomeImages"],
-    alert: "Needs owner approval",
-  },
-];
-
-const ownerQueue = [
-  "Put `/admin` behind Cloudflare Access and allow only your Google account.",
-  "Move user/app assignments into a shared database so this dashboard becomes live.",
-  "Normalize role names across apps so assignment rules stay predictable.",
-  "Add audit logging for role changes and app access grants.",
-];
+const state = {
+  apps: [],
+  users: [],
+  ownerQueue: [],
+};
 
 const metricContainer = document.getElementById("adminMetrics");
 const directoryContainer = document.getElementById("userDirectory");
 const appContainer = document.getElementById("adminApps");
 const matrixContainer = document.getElementById("permissionMatrix");
 const queueContainer = document.getElementById("ownerQueue");
+const flashContainer = document.getElementById("adminFlash");
+const userForm = document.getElementById("userForm");
+const assignmentForm = document.getElementById("assignmentForm");
+const assignmentUser = document.getElementById("assignmentUser");
+const assignmentApp = document.getElementById("assignmentApp");
 const year = document.getElementById("year");
 
 if (year) {
   year.textContent = new Date().getFullYear();
+}
+
+function showFlash(message, tone = "info") {
+  if (!flashContainer) {
+    return;
+  }
+
+  flashContainer.className = `admin-flash is-${tone}`;
+  flashContainer.textContent = message;
 }
 
 function createMetric(label, value, helper) {
@@ -112,19 +39,24 @@ function createMetric(label, value, helper) {
   `;
 }
 
-if (metricContainer) {
-  const liveApps = apps.filter((app) => app.status === "Live").length;
-  const totalUsers = apps.reduce((sum, app) => sum + app.users, 0);
+function renderMetrics(metrics) {
+  if (!metricContainer) {
+    return;
+  }
 
   metricContainer.innerHTML = [
-    createMetric("Hosted apps", apps.length, "One central index"),
-    createMetric("Live apps", liveApps, "Production-ready and assigned"),
-    createMetric("Managed seats", totalUsers, "Across all hosted apps"),
-    createMetric("Owner actions", ownerQueue.length, "Current control-room queue"),
+    createMetric("Hosted apps", metrics.hostedApps, "Connected to the shared layer"),
+    createMetric("Live apps", metrics.liveApps, "Production-ready and assigned"),
+    createMetric("Assigned seats", metrics.assignedSeats, "Across all hosted apps"),
+    createMetric("Pending review", metrics.pendingUsers, "Accounts needing owner attention"),
   ].join("");
 }
 
-if (directoryContainer) {
+function renderUsers(users) {
+  if (!directoryContainer) {
+    return;
+  }
+
   directoryContainer.innerHTML = users
     .map(
       (user) => `
@@ -134,12 +66,12 @@ if (directoryContainer) {
               <h3>${user.name}</h3>
               <p class="directory-email">${user.email}</p>
             </div>
-            <span class="directory-status">${user.status}</span>
+            <span class="directory-status">${user.statusLabel}</span>
           </div>
           <div class="directory-meta">
-            <p><span>Role</span>${user.role}</p>
-            <p><span>Apps</span>${user.apps.join(", ")}</p>
-            <p><span>Attention</span>${user.alert}</p>
+            <p><span>Global role</span>${user.roleLabel}</p>
+            <p><span>Apps</span>${user.appSummary || "No apps assigned"}</p>
+            <p><span>Notes</span>${user.notes || "No notes"}</p>
           </div>
         </article>
       `,
@@ -147,20 +79,24 @@ if (directoryContainer) {
     .join("");
 }
 
-if (appContainer) {
+function renderApps(apps) {
+  if (!appContainer) {
+    return;
+  }
+
   appContainer.innerHTML = apps
     .map(
       (app) => `
         <article class="hosted-app-card">
           <div class="hosted-app-head">
             <h3>${app.name}</h3>
-            <span class="status-chip">${app.status}</span>
+            <span class="status-chip">${app.statusLabel}</span>
           </div>
-          <p class="hosted-app-note">${app.note}</p>
+          <p class="hosted-app-note">${app.note || "No app note set yet."}</p>
           <div class="hosted-app-meta">
-            <p><span>Environment</span>${app.environment}</p>
-            <p><span>Users</span>${app.users}</p>
-            <p><span>Role model</span>${app.roleModel}</p>
+            <p><span>Environment</span>${app.environmentLabel}</p>
+            <p><span>Users</span>${app.userCount}</p>
+            <p><span>Role model</span>${app.roleModel || "Not set"}</p>
           </div>
         </article>
       `,
@@ -168,13 +104,17 @@ if (appContainer) {
     .join("");
 }
 
-if (matrixContainer) {
+function renderMatrix(apps) {
+  if (!matrixContainer) {
+    return;
+  }
+
   matrixContainer.innerHTML = `
     <div class="matrix-row matrix-head">
       <span>App</span>
       <span>Owner</span>
       <span>Admin</span>
-      <span>Editor / Ops</span>
+      <span>Ops / Editor</span>
       <span>Viewer</span>
     </div>
     ${apps
@@ -193,8 +133,12 @@ if (matrixContainer) {
   `;
 }
 
-if (queueContainer) {
-  queueContainer.innerHTML = ownerQueue
+function renderQueue(queue) {
+  if (!queueContainer) {
+    return;
+  }
+
+  queueContainer.innerHTML = queue
     .map(
       (item, index) => `
         <div class="queue-item">
@@ -205,3 +149,112 @@ if (queueContainer) {
     )
     .join("");
 }
+
+function renderAssignmentOptions() {
+  if (assignmentUser) {
+    assignmentUser.innerHTML = state.users
+      .map((user) => `<option value="${user.id}">${user.name} (${user.email})</option>`)
+      .join("");
+  }
+
+  if (assignmentApp) {
+    assignmentApp.innerHTML = state.apps
+      .map((app) => `<option value="${app.id}">${app.name}</option>`)
+      .join("");
+  }
+}
+
+async function request(url, options = {}) {
+  const response = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+    ...options,
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload.error || "Request failed");
+  }
+
+  return payload;
+}
+
+async function loadAdmin() {
+  try {
+    const payload = await request("/api/admin/bootstrap");
+
+    state.apps = payload.apps;
+    state.users = payload.users;
+    state.ownerQueue = payload.ownerQueue;
+
+    renderMetrics(payload.metrics);
+    renderUsers(payload.users);
+    renderApps(payload.apps);
+    renderMatrix(payload.apps);
+    renderQueue(payload.ownerQueue);
+    renderAssignmentOptions();
+
+    showFlash(payload.securityMessage || "Admin data loaded.", "success");
+  } catch (error) {
+    showFlash(error.message, "error");
+  }
+}
+
+if (userForm) {
+  userForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(userForm);
+
+    try {
+      await request("/api/admin/users", {
+        method: "POST",
+        body: JSON.stringify({
+          fullName: formData.get("fullName"),
+          email: formData.get("email"),
+          globalRole: formData.get("globalRole"),
+          accountStatus: formData.get("accountStatus"),
+          notes: formData.get("notes"),
+        }),
+      });
+
+      userForm.reset();
+      showFlash("User saved.", "success");
+      await loadAdmin();
+    } catch (error) {
+      showFlash(error.message, "error");
+    }
+  });
+}
+
+if (assignmentForm) {
+  assignmentForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(assignmentForm);
+
+    try {
+      await request("/api/admin/memberships", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: Number(formData.get("userId")),
+          appId: Number(formData.get("appId")),
+          appRole: formData.get("appRole"),
+          permissionLevel: formData.get("permissionLevel"),
+          membershipStatus: formData.get("membershipStatus"),
+        }),
+      });
+
+      assignmentForm.reset();
+      showFlash("Assignment saved.", "success");
+      await loadAdmin();
+    } catch (error) {
+      showFlash(error.message, "error");
+    }
+  });
+}
+
+loadAdmin();
