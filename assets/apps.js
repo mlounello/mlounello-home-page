@@ -1,45 +1,73 @@
 const apps = [
   {
+    name: "Feud App",
+    slug: "feud-app",
+    homepagePreviewUrl: "https://feudapp.mlounello.com",
+    redirectUrl: "/apps/feud-app",
+    description: "Fast-paced game and prompt workflow app built for live interaction and audience play.",
+  },
+  {
+    name: "Siena Map App",
+    slug: "siena-map-app",
+    homepagePreviewUrl: "https://sienamapapp.mlounello.com",
+    redirectUrl: "/apps/siena-map-app",
+    description: "Campus and location mapping tools built for guided navigation and place-based information.",
+  },
+  {
+    name: "Lighting Color App",
+    slug: "lighting-color-app",
+    homepagePreviewUrl: "https://lightingcolorapp.mlounello.com",
+    redirectUrl: "/apps/lighting-color-app",
+    description: "Color workflow app for lighting design, palettes, and practical production reference.",
+  },
+  {
+    name: "Playbill App",
+    slug: "playbill-app",
+    homepagePreviewUrl: "https://playbillapp.mlounello.com/preview",
+    redirectUrl: "/apps/playbill-app",
+    description: "Program and publishing workflow app for show information, editorial passes, and output review.",
+  },
+  {
+    name: "Show Prep App",
+    slug: "showprep-app",
+    homepagePreviewUrl: "https://showprepapp.mlounello.com",
+    redirectUrl: "/apps/showprep-app",
+    description: "Show preparation and task tracking app for production workflows.",
+  },
+  {
     name: "GoboPad",
     slug: "gobopad",
-    previewUrl: "https://gobopad.mlounello.com",
+    homepagePreviewUrl: "https://gobopad.mlounello.com",
     redirectUrl: "/apps/gobopad",
     description: "Lighting-focused utility for faster show planning and pad workflows.",
   },
   {
     name: "Theatre Budget App",
     slug: "theatre-budget-app",
-    previewUrl: "https://theatrebudgetapp.mlounello.com",
+    homepagePreviewUrl: "https://theatrebudgetapp.mlounello.com",
     redirectUrl: "/apps/theatre-budget-app",
     description: "Production budgeting tools built for theatre teams and managers.",
   },
   {
     name: "DomeImages",
     slug: "domeimages",
-    previewUrl: "https://sienadome.mlounello.com",
+    homepagePreviewUrl: "https://sienadome.mlounello.com",
     redirectUrl: "/apps/domeimages",
     description: "Image workflows and galleries tailored for dome-based visual projects.",
   },
   {
-    name: "Siena Wheel",
+    name: "Siena Wheel App",
     slug: "siena-wheel",
-    previewUrl: "https://sienawheel.mlounello.com",
+    homepagePreviewUrl: "https://sienawheel.mlounello.com",
     redirectUrl: "/apps/siena-wheel",
     description: "Interactive wheel app built for guided decisions and classroom activities.",
   },
   {
-    name: "Alcohol Origins",
+    name: "Alcohol Origins App",
     slug: "alcohol-origins",
-    previewUrl: "https://alcoholorigins.mlounello.com",
+    homepagePreviewUrl: "https://alcoholorigins.mlounello.com",
     redirectUrl: "/apps/alcohol-origins",
     description: "Explore drinks, regions, and historical context by origin.",
-  },
-  {
-    name: "ShowPrep App",
-    slug: "showprep-app",
-    previewUrl: "https://showprepapp.mlounello.com",
-    redirectUrl: "/apps/showprep-app",
-    description: "Show preparation and task tracking app for production workflows.",
   },
 ];
 
@@ -74,6 +102,19 @@ if (appsGrid) {
     const card = document.createElement("article");
     card.className = "app-card";
 
+    const previewInner = `
+      <iframe
+        class="preview-frame"
+        title="${app.name} preview"
+        src="${app.homepagePreviewUrl}"
+        loading="lazy"
+        scrolling="no"
+        tabindex="-1"
+        referrerpolicy="strict-origin-when-cross-origin"
+        sandbox="allow-scripts allow-forms allow-popups allow-same-origin"
+      ></iframe>
+    `;
+
     card.innerHTML = `
       <div class="app-head">
         <h2>${app.name}</h2>
@@ -88,20 +129,11 @@ if (appsGrid) {
           href="${app.redirectUrl}"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Open ${app.name}"
+          aria-label="Open ${app.name} homepage"
         ></a>
-        <iframe
-          class="preview-frame"
-          title="${app.name} preview"
-          src="${app.previewUrl}"
-          loading="lazy"
-          scrolling="no"
-          tabindex="-1"
-          referrerpolicy="strict-origin-when-cross-origin"
-          sandbox="allow-scripts allow-forms allow-popups allow-same-origin"
-        ></iframe>
+        ${previewInner}
       </div>
-      <p class="app-route">Redirect route: ${app.redirectUrl}</p>
+      <p class="app-route">Public homepage preview: ${app.homepagePreviewUrl}</p>
     `;
 
     appsGrid.appendChild(card);

@@ -353,6 +353,37 @@ nav a:hover {
   box-shadow: inset 0 0 0 2px #2b557272;
 }
 
+.preview-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-3);
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 40%, #2b557230 0%, #2b557200 42%),
+    linear-gradient(180deg, #101824, #0d131a);
+}
+
+.preview-fallback-label,
+.preview-fallback-copy {
+  margin: 0;
+}
+
+.preview-fallback-label {
+  color: var(--text-main);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.preview-fallback-copy {
+  margin-top: 10px;
+  color: var(--text-muted);
+  max-width: 28ch;
+}
+
 .app-route {
   margin: 10px 0 0;
   color: var(--text-muted);
